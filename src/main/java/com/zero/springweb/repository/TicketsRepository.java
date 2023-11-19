@@ -19,12 +19,12 @@ public class TicketsRepository {
     }
 
     public List<Ticket> getTickets() throws SQLException {
-        ResultSet resultSet = db.execute("SELECT T.id, T.seat, T.bag_weight, T.flight_number, T.passanger, P.fullname, P.email, SD.city AS \"dispatch_city\", SA.city AS \"arrival_city\", F.dispatch_date, F.arrival_date FROM \"Ticket\" T \n" +
+        return db.execute("SELECT T.id, T.seat, T.bag_weight, T.flight_number, T.passanger, P.fullname, P.email, SD.city AS \"dispatch_city\", SA.city AS \"arrival_city\", F.dispatch_date, F.arrival_date FROM \"Ticket\" T \n" +
                 "INNER JOIN \"Passanger\" P ON T.passanger=P.document_number \n" +
                 "INNER JOIN \"Flight\" F ON T.flight_number=F.number\n" +
                 "INNER JOIN \"Station\" SD ON SD.id = F.dispatch_city\n" +
                 "LEFT JOIN \"Station\" SA ON SA.id = F.arrival_city");
-        return convert.processTicketSet(resultSet);
+//        return convert.processTicketSet(resultSet);
     }
 
     public void createTicket(Ticket ticket) throws SQLException {

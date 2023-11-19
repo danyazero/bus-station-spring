@@ -1,9 +1,13 @@
 package com.zero.springweb.database;
 
+import com.zero.springweb.model.Ticket;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class Database {
@@ -23,12 +27,25 @@ public class Database {
     }
 
 
-    public ResultSet execute(String SQL){
+    public List<Ticket> execute(String SQL){
         try {
             Statement statement = connection.createStatement();
-            return statement.executeQuery(SQL);
+            ResultSet resultSet = statement.executeQuery(SQL);
+            Convert convert = new Convert();
+
+            List<Ticket> tickets = new ArrayList<>();
+            while(resultSet.next()) {
+                Ticket ticket = new Ticket();
+                convert.fillObjectFromResultSet(ticket, resultSet);
+
+                tickets.add(ticket);
+            }
+
+            return tickets;
         } catch (SQLException throwables){
             throwables.printStackTrace();
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
         return null;
     }

@@ -1,33 +1,41 @@
 package com.zero.springweb.database;
 
-import com.zero.springweb.model.Ticket;
-
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Convert {
-    public List<Ticket> processTicketSet(ResultSet resultSet) throws SQLException {
-        List<Ticket> tickets = new ArrayList<>();
-        while(resultSet.next()) {
-            Ticket ticket = new Ticket();
+    public void fillObjectFromResultSet(Object object, ResultSet resultSet) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        Field[] fields = object.getClass().getDeclaredFields();
 
-            ticket.setId(resultSet.getInt("id"));
-            ticket.setSeat(resultSet.getInt("seat"));
-            ticket.setFlight_number(resultSet.getInt("flight_number"));
-            ticket.setPassanger(resultSet.getInt("passanger"));
-            ticket.setFullname(resultSet.getString("fullname"));
-            ticket.setEmail(resultSet.getString("email"));
-            ticket.setBag_weight(resultSet.getInt("bag_weight"));
-            ticket.setDispatch_city(resultSet.getString("dispatch_city"));
-            ticket.setArrival_city(resultSet.getString("arrival_city"));
-            ticket.setDispatch_date(resultSet.getTimestamp("dispatch_date"));
-            ticket.setArrival_date(resultSet.getTimestamp("arrival_date"));
+        for (Field field : fields) {
 
-            tickets.add(ticket);
+            String fieldName = field.getName();
+
+            Object value = resultSet.getObject(fieldName);
+
+            setFieldValue(object, field, value);
+
         }
+    }
 
-        return tickets;
+    private static void setFieldValue(Object object, Field field, Object value) throws SQLException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        Class<?> fieldType = field.getType();
+        String methodName = "set" + field.getName();
+        Method setter = object.getClass().getDeclaredMethod(capitalizeThirdLetter(methodName), fieldType);
+
+        setter.invoke(object, value);
+    }
+
+    private static String capitalizeThirdLetter(String str) {
+        if (str.length() < 3) {
+            return str;
+        } else {
+            char[] chars = str.toCharArray();
+            chars[3] = Character.toUpperCase(chars[3]);
+            return new String(chars);
+        }
     }
 }

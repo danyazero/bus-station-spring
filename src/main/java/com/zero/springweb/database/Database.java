@@ -27,15 +27,16 @@ public class Database {
     }
 
 
-    public List<Ticket> execute(String SQL){
+    public <T> List<T> execute(String SQL, Object... values){
         try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(SQL);
+            PreparedStatement statement = connection.prepareStatement(SQL);
+            prepareStatement(statement, values);
+            ResultSet resultSet = statement.executeQuery();
             Convert convert = new Convert();
 
             List<Ticket> tickets = new ArrayList<>();
             while(resultSet.next()) {
-                Ticket ticket = new Ticket();
+                Ticket ticket = new Object<T>();
                 convert.fillObjectFromResultSet(ticket, resultSet);
 
                 tickets.add(ticket);
@@ -53,6 +54,12 @@ public class Database {
     public void query(String SQL, Object... values) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
 
+        prepareStatement(preparedStatement, values);
+
+        preparedStatement.execute();
+    }
+
+    private void prepareStatement(PreparedStatement preparedStatement, Object... values) throws SQLException {
         for (int i = 0; i < values.length; i++) {
             switch (values[i]) {
                 case Integer num -> preparedStatement.setInt(i+1, num);
@@ -64,7 +71,5 @@ public class Database {
                 }
             }
         }
-
-        preparedStatement.execute();
     }
 }

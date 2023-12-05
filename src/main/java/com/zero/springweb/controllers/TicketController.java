@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RestController
+@CrossOrigin("http://localhost:5173")
 @RequestMapping("/ticket")
 public class TicketController {
     TicketsRepository ticketsRepository;
@@ -22,6 +23,11 @@ public class TicketController {
     public List<Ticket> getTickets() throws SQLException {
         return ticketsRepository.getTickets();
     }
+
+//    @GetMapping("/{id}")
+//    public Ticket getTicket(@PathVariable int id){
+//
+//    }
 
     @PostMapping
     public void createTicket(@RequestBody Ticket ticket) throws SQLException {

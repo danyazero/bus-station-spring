@@ -1,5 +1,6 @@
 package com.zero.springweb.controllers;
 
+import com.zero.springweb.model.FullTicket;
 import com.zero.springweb.model.Ticket;
 import com.zero.springweb.repository.TicketsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,10 @@ public class TicketController {
         return ticketsRepository.getTickets();
     }
 
-//    @GetMapping("/{id}")
-//    public Ticket getTicket(@PathVariable int id){
-//
-//    }
+    @GetMapping("/{id}")
+    public FullTicket getTicket(@PathVariable int id){
+        return ticketsRepository.getTicket(id);
+    }
 
     @PostMapping
     public void createTicket(@RequestBody Ticket ticket) throws SQLException {

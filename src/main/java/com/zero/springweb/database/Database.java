@@ -27,25 +27,24 @@ public class Database {
     }
 
 
-    public <T> List<T> execute(String SQL, Object... values){
+    public <T> List<T> execute(Class<T> clazz, String SQL, Object... values) {
         try {
             PreparedStatement statement = connection.prepareStatement(SQL);
             prepareStatement(statement, values);
             ResultSet resultSet = statement.executeQuery();
             Convert convert = new Convert();
 
-            List<Ticket> tickets = new ArrayList<>();
+            List<T> items = new ArrayList<>();
             while(resultSet.next()) {
-                Ticket ticket = new Object<T>();
-                convert.fillObjectFromResultSet(ticket, resultSet);
-
-                tickets.add(ticket);
+                T item = clazz.getDeclaredConstructor().newInstance();
+                convert.fillObjectFromResultSet(item, resultSet);
+                items.add(item);
             }
 
-            return tickets;
+            return items;
         } catch (SQLException throwables){
             throwables.printStackTrace();
-        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
             throw new RuntimeException(e);
         }
         return null;

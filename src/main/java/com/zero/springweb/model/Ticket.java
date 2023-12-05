@@ -20,7 +20,4 @@ public class Ticket {
     private String arrival_city;
     private Date dispatch_date;
     private Date arrival_date;
-
-    public Ticket(){}
-
 }

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +66,7 @@ public class Database {
                 case Integer num -> preparedStatement.setInt(i+1, num);
                 case String s -> preparedStatement.setString(i+1, s);
                 case Date date -> preparedStatement.setDate(i+1, date);
+                case Long lon -> preparedStatement.setLong(i+1, lon);
                 case null, default -> {
                     assert values[i] != null;
                     throw new SQLException("Невідомий тип: " + values[i].getClass().getName());

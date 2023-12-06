@@ -13,8 +13,6 @@ import java.util.List;
 @Repository
 public class TicketsRepository {
     Database db;
-    Convert convert = new Convert();
-
     public TicketsRepository(Database db) {
         this.db = db;
     }

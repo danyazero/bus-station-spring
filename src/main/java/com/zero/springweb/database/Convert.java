@@ -13,6 +13,7 @@ public class Convert {
         for (Field field : fields) {
 
             String fieldName = field.getName();
+            System.out.println(field.getType());
 
             Object value = resultSet.getObject(fieldName);
 
@@ -25,7 +26,6 @@ public class Convert {
         Class<?> fieldType = field.getType();
         String methodName = "set" + field.getName();
         Method setter = object.getClass().getDeclaredMethod(capitalizeThirdLetter(methodName), fieldType);
-
         setter.invoke(object, value);
     }
 

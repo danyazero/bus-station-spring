@@ -1,11 +1,9 @@
 package com.zero.springweb.controllers;
 
 import com.zero.springweb.model.Flight;
+import com.zero.springweb.model.Seat;
 import com.zero.springweb.repository.FlightRepository;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,7 +21,15 @@ public class FlightController {
     @GetMapping
     public List<Flight> getFlights(){
         return flightRepository.getFlights();
-//        Flight flight = new Flight();
-//        flight.
+    }
+
+    @GetMapping("/{id}")
+    public Flight getFlight(@PathVariable int id){
+        return flightRepository.getFlight(id);
+    }
+
+    @GetMapping("seats/{id}")
+    public List<Seat> getEngagedSeats(@PathVariable int id){
+        return flightRepository.getEngagedSeats(id);
     }
 }

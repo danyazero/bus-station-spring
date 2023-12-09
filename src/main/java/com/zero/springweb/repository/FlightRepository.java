@@ -3,6 +3,7 @@ package com.zero.springweb.repository;
 import com.zero.springweb.database.Database;
 import com.zero.springweb.model.Flight;
 import com.zero.springweb.model.Seat;
+import com.zero.springweb.model.Station;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,6 +31,11 @@ public class FlightRepository {
                 "INNER JOIN \"Bus_class\" C ON C.id = B.bus_class\n" +
                 "JOIN \"Station\" SA ON SA.id = T.arrival_city\n" +
                 "JOIN \"Station\" SD ON SD.id = T.dispatch_city WHERE T.number = ?", id).getFirst();
+    }
+
+    public List<Station> getFlightStations(int id){
+        return db.execute(Station.class, "SELECT F.id, S.city, F.dispatch_date, F.arrival_date FROM \"Flight_Station\" F\n" +
+                "JOIN \"Station\" S ON S.id = F.station WHERE F.flight_number = ?", id);
     }
 
     public List<Seat> getEngagedSeats(int flight_number){

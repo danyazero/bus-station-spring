@@ -1,11 +1,10 @@
 package com.zero.springweb.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-public class Seat {
-    private int seat;
-    private String full_name;
+public interface Seat {
+    int getSeat();
+    String getFullName();
 }

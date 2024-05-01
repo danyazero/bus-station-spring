@@ -1,59 +1,107 @@
 package com.zero.springweb.repository;
 
-import com.zero.springweb.database.Convert;
-import com.zero.springweb.database.Database;
-import com.zero.springweb.model.FullTicket;
-import com.zero.springweb.model.Station;
-import com.zero.springweb.model.Ticket;
-import org.springframework.stereotype.Repository;
+import com.zero.springweb.model.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.List;
 
-@Repository
-public class TicketsRepository {
-    Database db;
-    public TicketsRepository(Database db) {
-        this.db = db;
-    }
+//select
+//            T.seat,
+//            P.fullName
+//            from "Ticket" T
+//            join "Passenger" P on P.documentNumber = T.passengerDocument.documentNumber
+//            where T.flight.id = ?1
 
-    public List<Ticket> getTickets() throws SQLException {
-        return db.execute(Ticket.class, "SELECT T.id, T.seat, T.bag_weight, T.flight_number, T.passenger, P.full_name, P.email, SD.city AS \"dispatch_city\", SA.city AS \"arrival_city\", F.dispatch_date, F2.arrival_date, C.class AS \"bus_class\" FROM \"Ticket\" T \n" +
-                "JOIN \"Passenger\" P ON T.passenger=P.document_number \n" +
-                "JOIN \"Flight_Station\" F ON T.dispatch_city = F.id\n" +
-                "JOIN \"Flight_Station\" F2 ON T.arrive_city = F2.id\n" +
-                "JOIN \"Station\" SD ON SD.id = F.station\n" +
-                "JOIN \"Station\" SA ON SA.id = F2.station\n" +
-                "JOIN \"Flight\" Fl ON Fl.number = T.flight_number\n" +
-                "INNER JOIN \"Bus\" B ON B.number = Fl.bus\n" +
-                "INNER JOIN \"Bus_class\" C ON C.id = B.bus_class");
-    }
+public interface TicketsRepository extends JpaRepository<com.zero.springweb.entities.Ticket, Integer> {
+    @Query(value = """
+            select
+                T.seat,
+                P.full_name as fullName
+            from "Ticket" T
+            join "Passenger" P on P.document_number = T.passenger_document
+            where T.flight_id = ?1
+            """, nativeQuery = true)
+    List<Seat> getEngagedSeats(int flight_number);
 
-    public FullTicket getTicket(int id){
-        Ticket ticket = db.execute(Ticket.class, "SELECT T.id, T.seat, T.bag_weight, T.flight_number, T.passenger, P.full_name, P.email, SD.city AS \"dispatch_city\", SA.city AS \"arrival_city\", F.dispatch_date, F.arrival_date, C.class AS \"bus_class\" FROM \"Ticket\" T \n" +
-                "INNER JOIN \"Passenger\" P ON T.passenger=P.document_number \n" +
-                "INNER JOIN \"Flight\" F ON T.flight_number=F.number\n" +
-                "INNER JOIN \"Station\" SD ON SD.id = F.dispatch_city\n" +
-                "INNER JOIN \"Bus\" B ON B.number = F.bus\n" +
-                "INNER JOIN \"Bus_class\" C ON C.id = B.bus_class\n" +
-                "LEFT JOIN \"Station\" SA ON SA.id = F.arrival_city WHERE T.id = ?", id).getFirst();
-        List<Station> stations = db.execute(Station.class, "SELECT S.id, C.city, S.dispatch_date, S.arrival_date FROM \"Flight_Station\" S\n" +
-                "JOIN \"Station\" C ON C.id = S.station WHERE S.flight_number = ?", ticket.getFlight_number());
+    @Modifying
+    @Query(value = """
+            UPDATE "Ticket" SET bag_weight=?2, passenger_document=?3, flight_id=?4, seat=?5 WHERE id=?1
+""", nativeQuery = true)
+    void updateTicket(int id, int bag_weight, int passenger, int flight_number, int seat);
 
-        return new FullTicket(ticket, stations);
-    }
+    @Modifying
+    @Transactional
+    @Query(value = """
+            INSERT INTO "Ticket" (bag_weight, bag_height, bag_width, bag_depth, passenger_document, flight_id, seat, dispatch_city, arrive_city) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+""", nativeQuery = true)
+    void createTicket(int bag_weight, int bag_height, int bag_width, int bag_depth, long passenger, int flight_number, int seat, int dispatch_city, int arrive_city);
 
+    @Query(value = """
 
-    public void createTicket(Ticket ticket) throws SQLException {
-        db.query("INSERT INTO \"Ticket\"(bag_weight, bag_height, bag_width, bag_depth, passenger, flight_number, seat) VALUES (?, ?, ?, ?, ?, ?, ?)", ticket.getBag_weight(), 10, 35, 45, ticket.getPassenger(), ticket.getFlight_number(), ticket.getSeat());
-    }
+                        SELECT
+                            T.id,
+                            T.seat,
+                            T.bag_weight as bagWeight,
+                            T.flight_id as flightNumber,
+                            T.passenger_document as passengerDocument,
+                            P.full_name as fullName,
+                            P.email,
+                            SD.city AS dispatchCity,
+                            SA.city AS arrivalCity,
+                            F.dispatch_date as dispatchDate,
+                            F2.arrival_date as arrivalDate,
+                            C.class AS busClass
+                        FROM "User" U
+                        JOIN "Passanger_user" PU ON PU.user_document = U.document_number
+                        JOIN "Ticket" T ON T.passenger_document = PU.passenger_document
+                        JOIN "Passenger" P ON T.passenger_document=P.document_number
+                        JOIN "Flight_station" F ON T.dispatch_city = F.id
+                        JOIN "Flight_station" F2 ON T.arrive_city = F2.id
+                        JOIN "Station" SD ON SD.id = F.station
+                        JOIN "Station" SA ON SA.id = F2.station
+                        JOIN "Flight" Fl ON Fl.id = T.flight_id
+                        INNER JOIN "Bus" B ON B.number = Fl.bus_number
+                        INNER JOIN "Bus_class" C ON C.id = B.bus_class
+                        WHERE U.id = ?1
+            """, nativeQuery = true)
+    List<Ticket> getTickets(int userId);
 
-    public void deleteTicket(int id) throws SQLException {
-        db.query("DELETE FROM \"Ticket\" WHERE id=?", id);
-    }
+    @Query(value = """
 
-    public void updateTicket(Ticket ticket) throws SQLException {
-        db.query("UPDATE \"Ticket\" SET bag_weight=?, passenger=?, flight_number=?, seat=? WHERE id=?", ticket.getBag_weight(), ticket.getPassenger(), ticket.getFlight_number(), ticket.getSeat(), ticket.getId());
-    }
-
+            SELECT 
+                T.id, 
+                T.seat, 
+                T.bag_weight as bagWeight, 
+                T.flight_id as flightNumber,
+                T.passenger_document,
+                P.full_name as fullName,
+                P.email,
+                SD.city AS dispatchCity,
+                SA.city AS arrivalCity,
+                F.dispatch_date as dispatchDate,
+                F.arrival_date as arrivalDate,
+                C.class AS busClass 
+            FROM "Ticket" T 
+            INNER JOIN "Passenger" P ON T.passenger_document=P.document_number 
+            INNER JOIN "Flight" F ON T.flight_id=F.id
+            INNER JOIN "Station" SD ON SD.id = F.dispatch_city
+            INNER JOIN "Bus" B ON B.number = F.bus_number
+            INNER JOIN "Bus_class" C ON C.id = B.bus_class
+            LEFT JOIN "Station" SA ON SA.id = F.arrival_city WHERE T.id = ?1
+""", nativeQuery = true)
+    Ticket getTicket(int id);
+    
+    @Query(value = """
+            SELECT
+                S.id, 
+                C.city, 
+                S.dispatch_date as dispatchDate,
+                S.arrival_date as arrivalDate
+            FROM "Flight_station" S
+            JOIN "Station" C ON C.id = S.station WHERE S.flight_number = ?1
+""", nativeQuery = true)
+    List<Station> getFlightStations(int flight_number);
 }

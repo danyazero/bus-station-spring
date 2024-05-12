@@ -39,10 +39,10 @@ public class WebSecurityConfig {
 //                .exceptionHandling(h -> h.accessDeniedHandler(csrfHandler))
                 .securityMatcher("/**")
                 .authorizeHttpRequests(registry -> registry
+                                .requestMatchers("/api/flight/**").permitAll()
                                 .requestMatchers("/api/dashboard/**").hasAuthority("ADMIN")
                                 .requestMatchers("/api/login").permitAll()
                                 .requestMatchers("/api/register").permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/api/v1/order/{id}/private").fullyAuthenticated()
                                 .requestMatchers(HttpMethod.GET, "/images/*").permitAll()
                                 .anyRequest().authenticated()
                 );

@@ -40,6 +40,7 @@ public interface FlightRepository extends CrudRepository<com.zero.springweb.enti
 
     @Query(value = """
 select
+    F.id,
 S.city as dispatchCity,
 FSS.dispatch_date as dispatchDate,
 S2.city as arrivalCity,
@@ -66,6 +67,18 @@ where FSS.station = ?1 and F.id = FSS.flight_number and F.id in (
             select * from "Station" S order by SUBSTR(S.city, 1, 1)
             """, nativeQuery = true)
     List<StationDTO> getStationsList();
+
+    @Query(value = """
+    select
+        S.id,
+        S.city
+    from "Station" S
+    where lower(S.city) like CONCAT('%',lower(?1),'%')
+    or lower(S.city_ru) like CONCAT('%',lower(?1),'%')
+    or lower(S.city_en) like CONCAT('%',lower(?1),'%') limit 3
+""", nativeQuery = true)
+    List<StationDTO> getStationByKeyword(String keyword);
+
 
     @Query(value = """
 

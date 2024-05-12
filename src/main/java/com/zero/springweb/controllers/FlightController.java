@@ -19,6 +19,12 @@ public class FlightController {
     private FlightRepository flightRepository;
     private TicketsRepository ticketsRepository;
 
+    @GetMapping("/search")
+    public List<StationDTO> getStationByKeyword(@RequestParam(defaultValue = "Київ") String keyword) {
+        System.out.println(keyword);
+        return flightRepository.getStationByKeyword(keyword);
+    }
+
     @GetMapping
     public List<FlightWithPrice> getFlights(){
 

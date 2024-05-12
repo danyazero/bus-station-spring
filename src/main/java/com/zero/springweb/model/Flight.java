@@ -18,4 +18,5 @@ public interface Flight {
     int getBagDepth();
     Long getPurchased();
     int getFreeSeat();
+    Float getPricePerKilometer();
 }

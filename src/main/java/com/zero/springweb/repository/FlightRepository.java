@@ -1,6 +1,7 @@
 package com.zero.springweb.repository;
 
 import com.zero.springweb.model.Flight;
+import com.zero.springweb.model.FlightWithPrice;
 import com.zero.springweb.model.Station;
 import com.zero.springweb.model.StationDTO;
 import org.springframework.data.jpa.repository.Query;
@@ -14,9 +15,9 @@ public interface FlightRepository extends CrudRepository<com.zero.springweb.enti
     @Query(value = """
                         SELECT
                             T.id,
-                            SD.city AS dispatchCity,
+                            ST2.city AS dispatchCity,
                             T.dispatch_date as dispatchDate,
-                            SA.city AS arrivalCity, 
+                            ST.city AS arrivalCity, 
                             T.arrival_date as arrivalDate, 
                             C.class AS busClass, 
                             B.bag_height as bagHeight, 
@@ -24,45 +25,45 @@ public interface FlightRepository extends CrudRepository<com.zero.springweb.enti
                             B.bag_depth as bagDepth,  
                             B.bag_weight as bagWeight, 
                             (SELECT COUNT(*) FROM "Ticket" Ti WHERE Ti.flight_id = T.id) AS purchased,
-                            B.seat as freeSeat
+                            B.seat as freeSeat,
+                            B.price_per_kilometer as pricePerKilometer,
+                            (ABS(SA.distance - SD.distance) * B.price_per_kilometer) as price
                         FROM "Flight" T  
                         INNER JOIN "Bus" B ON B.number = T.bus_number
                         INNER JOIN "Bus_class" C ON C.id = B.bus_class
-                        JOIN "Station" SA ON SA.id = T.arrival_city
-                        JOIN "Station" SD ON SD.id = T.dispatch_city
+                        JOIN "Flight_station" SA ON SA.id = T.arrival_city
+                        JOIN "Flight_station" SD ON SD.id = T.dispatch_city
+                        JOIN "Station" ST ON ST.id = SA.station
+                        JOIN "Station" ST2 ON ST2.id = SD.station
             """, nativeQuery = true)
-    List<Flight> getFlights();
+    List<FlightWithPrice> getFlights();
 
     @Query(value = """
 select
-    F.id,
-    SD.city AS dispatchCity,
-    F.dispatch_date as dispatchDate,
-    SA.city AS arrivalCity,
-    F.arrival_date as arrivalDate, 
-    C.class AS busClass, 
-    B.bag_height as bagHeight, 
-    B.bag_width as bagWidth,
-    B.bag_depth as bagDepth,  
-    B.bag_weight as bagWeight, 
-    (SELECT COUNT(*) FROM "Ticket" Ti WHERE Ti.flight_id = F.id) AS purchased,
-    B.seat as freeSeat
-from "Flight_station" FS, "Flight" F
-INNER JOIN "Bus" B ON B.number = F.bus_number
-INNER JOIN "Bus_class" C ON C.id = B.bus_class
-JOIN "Station" SA ON SA.id = F.arrival_city
-JOIN "Station" SD ON SD.id = F.dispatch_city
-where FS.station = ?1 and F.id = FS.flight_number and F.id in (
+S.city as dispatchCity,
+FSS.dispatch_date as dispatchDate,
+S2.city as arrivalCity,
+FS.arrival_date as arrivalDate,
+(SELECT COUNT(*) FROM "Ticket" Ti WHERE Ti.flight_id = F.id) AS purchased,
+C.class as busClass,
+B.seat as freeSeat,
+B.bag_height as bagHeight,
+B.bag_width as bagWidth,
+B.bag_depth as bagDepth,
+B.bag_weight as bagWeight,
+B.price_per_kilometer as pricePerKilometer,
+(ABS(FS.distance - FSS.distance) * B.price_per_kilometer) as price
+from "Flight_station" FSS, "Flight" F, "Flight_station" FS, "Station" S2, "Station" S, "Bus" B, "Bus_class" C
+where FSS.station = ?1 and F.id = FSS.flight_number and F.id in (
 	select F.id
 	from "Flight_station" FS, "Flight" F
-	where FS.station = ?2 and F.id = FS.flight_number
-)
-
+	where FS.station = ?2 and FS.id > FSS.id and F.id = FS.flight_number
+) and FS.flight_number = F.id and FS.station = ?2 and S2.id = FS.station and S.id = FSS.station and B.number = F.bus_number and C.id = B.bus_class
 """, nativeQuery = true)
-    List<Flight> filterFlightsByDispatchAndArrive(int dispatchCity, int arrivalCity);
+    List<FlightWithPrice> filterFlightsByDispatchAndArrive(int dispatchCity, int arrivalCity);
 
     @Query(value = """
-            select * from "Station"
+            select * from "Station" S order by SUBSTR(S.city, 1, 1)
             """, nativeQuery = true)
     List<StationDTO> getStationsList();
 
@@ -80,12 +81,16 @@ where FS.station = ?1 and F.id = FS.flight_number and F.id in (
                 B.bag_depth as bagDepth,  
                 B.bag_weight as bagWeight, 
                 (SELECT COUNT(*) FROM "Ticket" Ti WHERE Ti.flight_id = T.id) AS purchased, 
-                B.seat AS freeSeat 
+                B.seat AS freeSeat,
+                B.price_per_kilometer as pricePerKilometer
             FROM "Flight" T  
             INNER JOIN "Bus" B ON B.number = T.bus_number
             INNER JOIN "Bus_class" C ON C.id = B.bus_class
-            JOIN "Station" SA ON SA.id = T.arrival_city
-            JOIN "Station" SD ON SD.id = T.dispatch_city WHERE T.id = ?
+            JOIN "Flight_station" FS ON FS.id = T.arrival_city
+            JOIN "Flight_station" FD ON FD.id = T.dispatch_city
+            JOIN "Station" SA ON SA.id = FS.station
+            JOIN "Station" SD ON SD.id = FD.station
+            WHERE T.id = ?
 """, nativeQuery = true)
     Flight getFlight(int id);
 

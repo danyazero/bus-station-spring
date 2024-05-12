@@ -1,9 +1,6 @@
 package com.zero.springweb.controllers;
 
-import com.zero.springweb.model.Flight;
-import com.zero.springweb.model.Seat;
-import com.zero.springweb.model.Station;
-import com.zero.springweb.model.StationDTO;
+import com.zero.springweb.model.*;
 import com.zero.springweb.repository.FlightRepository;
 import com.zero.springweb.repository.TicketsRepository;
 import lombok.AllArgsConstructor;
@@ -23,23 +20,18 @@ public class FlightController {
     private TicketsRepository ticketsRepository;
 
     @GetMapping
-    public List<Flight> getFlights(){
-        List<Flight> flights = flightRepository.getFlights();
-        System.out.println(flights.get(0).getArrivalCity() + " " + flights.get(0).getDispatchCity() + " " + flights.get(0).getBusClass());
-        return flights;
+    public List<FlightWithPrice> getFlights(){
+
+        return flightRepository.getFlights();
     }
 
     @GetMapping("/filter")
-    public List<Flight> getFlightsByFilter(
+    public List<FlightWithPrice> getFlightsByFilter(
             @RequestParam int dispatchCity,
             @RequestParam int arrivalCity
-//            @RequestParam Instant dispatchDate,
-//            @RequestParam Instant arrivalDate
     ) {
 
         System.out.println(dispatchCity + " " + arrivalCity);
-//        if(dispatchDate == null) dispatchDate = Instant.now();
-//        if(arrivalDate == null) arrivalDate = Instant.now().plus(Duration.ofDays(15));
 
 
         return flightRepository.filterFlightsByDispatchAndArrive(dispatchCity, arrivalCity);

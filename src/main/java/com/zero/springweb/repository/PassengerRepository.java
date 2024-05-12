@@ -3,10 +3,11 @@ package com.zero.springweb.repository;
 import com.zero.springweb.model.Passenger;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface PassengerRepository extends JpaRepository<com.zero.springweb.entities.Passenger, Integer> {
+public interface PassengerRepository extends CrudRepository<com.zero.springweb.entities.Passenger, Integer> {
     @Query(value = """
                         select
             P.phone,

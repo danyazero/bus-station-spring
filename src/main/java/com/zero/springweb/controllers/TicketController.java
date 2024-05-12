@@ -44,7 +44,8 @@ public class TicketController {
     public void createTicket(@RequestBody BookTicket ticket, Authentication authentication) throws SQLException {
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
         System.out.println(ticket);
-        ticketsRepository.createTicket(ticket.getBag_weight(),15, 15, 25, ticket.getPassenger(), ticket.getFlight_number(), ticket.getSeat(), ticket.getDispatch_city(), ticket.getArrival_city());
+        var calculatedPrice = ticketsRepository.getCalculatedPrice(ticket.getDispatch_city(), ticket.getArrival_city()).getPrice();
+        ticketsRepository.createTicket(ticket.getBag_weight(),15, 15, 25, ticket.getPassenger(), ticket.getFlight_number(), ticket.getSeat(), ticket.getDispatch_city(), ticket.getArrival_city(), calculatedPrice);
     }
 
     @PatchMapping("/{id}")

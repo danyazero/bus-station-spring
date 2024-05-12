@@ -10,4 +10,5 @@ public interface Station {
     String getCity();
     Date getDispatchDate();
     Date getArrivalDate();
+    Integer getDistance();
 }

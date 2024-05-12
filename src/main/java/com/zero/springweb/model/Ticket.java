@@ -15,4 +15,5 @@ public interface Ticket {
     String getArrivalCity();
     Date getDispatchDate();
     Date getArrivalDate();
+    Double getCalculatedPrice();
 }

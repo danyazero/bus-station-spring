@@ -24,7 +24,7 @@ import org.springframework.security.web.csrf.CsrfFilter;
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;
-//    private final CustomAuthenticationProvider authenticationProvider;
+    //    private final CustomAuthenticationProvider authenticationProvider;
     private final UnauthorizedHandler unauthorizedHandler;
 
     @Bean
@@ -39,11 +39,12 @@ public class WebSecurityConfig {
 //                .exceptionHandling(h -> h.accessDeniedHandler(csrfHandler))
                 .securityMatcher("/**")
                 .authorizeHttpRequests(registry -> registry
-                        .requestMatchers("/api/login").permitAll()
-                        .requestMatchers("/api/register").permitAll()
+                                .requestMatchers("/api/dashboard/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/login").permitAll()
+                                .requestMatchers("/api/register").permitAll()
 //                        .requestMatchers(HttpMethod.GET, "/api/v1/order/{id}/private").fullyAuthenticated()
-                        .requestMatchers(HttpMethod.GET,"/images/*").permitAll()
-                        .anyRequest().authenticated()
+                                .requestMatchers(HttpMethod.GET, "/images/*").permitAll()
+                                .anyRequest().authenticated()
                 );
         return http.build();
     }

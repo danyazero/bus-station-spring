@@ -24,9 +24,11 @@ public class JwtToPrincipalConverter {
         logger.info(user.get().getId() + " " + user.get().getPhone() + " " + user.get().getRole());
         var authorityList = Arrays.stream(user.get().getRole().split(", "))
                 .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-        for (SimpleGrantedAuthority simpleGrantedAuthority : authorityList) {
-            System.out.print(simpleGrantedAuthority);
+
+        for (SimpleGrantedAuthority grantedAuthority : authorityList) {
+            System.out.println(grantedAuthority);
         }
+
         return new UserPrincipal()
                 .setUserId( user.get().getId() )
                 .setPhone( user.get().getPhone() )

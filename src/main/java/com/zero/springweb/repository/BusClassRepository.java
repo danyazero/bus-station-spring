@@ -34,19 +34,22 @@ GROUP BY B.bus_class, BC.class
     @Query(value = """
             select
                 '7 days' as title,
-                COUNT(T.id) as count
+                COUNT(T.id) as count,
+                SUM(T.calculated_price) as sum
             from "Ticket" T
             where T.purchased >= NOW() - INTERVAL '7 days'
             UNION
             select
                 '14 days' as title,
-                COUNT(T.id) as count
+                COUNT(T.id) as count,
+                SUM(T.calculated_price) as sum
             from "Ticket" T
             where T.purchased >= NOW() - INTERVAL '14 days'
             UNION
             select
                 '30 days' as title,
-                COUNT(T.id) as count
+                COUNT(T.id) as count,
+                SUM(T.calculated_price) as sum
             from "Ticket" T
             where T.purchased >= NOW() - INTERVAL '30 days'
             order by count

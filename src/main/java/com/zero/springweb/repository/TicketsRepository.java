@@ -70,9 +70,8 @@ WHERE F.id = FS.flight_number and FS.id = ?2 and B.number = F.bus_number;
                             F2.arrival_date as arrivalDate,
                             C.class AS busClass
                         FROM "User" U
-                        JOIN "Passanger_user" PU ON PU.user_document = U.document_number
-                        JOIN "Ticket" T ON T.passenger_document = PU.passenger_document
-                        JOIN "Passenger" P ON T.passenger_document=P.document_number
+                        JOIN "Passenger" P ON P.user_id = U.id
+                        JOIN "Ticket" T ON T.passenger_document = P.document_number
                         JOIN "Flight_station" F ON T.dispatch_city = F.id
                         JOIN "Flight_station" F2 ON T.arrive_city = F2.id
                         JOIN "Station" SD ON SD.id = F.station
